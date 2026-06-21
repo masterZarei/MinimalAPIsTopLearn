@@ -20,14 +20,16 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddOutputCache();
+
 //Services End
 
 //Middleware Start
 var app = builder.Build();
-
+app.UseOutputCache();
 app.UseCors();
 
-app.MapGet("/categories", [EnableCors(policyName: "free")] () =>
+app.MapGet("/categories", () =>
 {
     return new List<CategoryInfo>
     {
@@ -36,7 +38,7 @@ app.MapGet("/categories", [EnableCors(policyName: "free")] () =>
         new(){Id=2, Name="Desktop Development"},
         new(){Id=3, Name="Database Adminstrator"},
     };
-});
+}).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(15)));
 
 
 // Configure the HTTP request pipeline.
