@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Cors;
 using MinimalAPIsTopLearn.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,12 +7,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(config =>
+    {
+        config.WithOrigins(builder.Configuration["AllowedOrigins"]!).AllowAnyMethod()
+        .AllowAnyHeader();
+    });
+    options.AddPolicy("free", config =>
+    {
+        config.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
 //Services End
 
 //Middleware Start
 var app = builder.Build();
 
-app.MapGet("/categories", () =>
+app.UseCors();
+
+app.MapGet("/categories", [EnableCors(policyName: "free")] () =>
 {
     return new List<CategoryInfo>
     {
