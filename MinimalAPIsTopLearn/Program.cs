@@ -1,10 +1,21 @@
 using Microsoft.AspNetCore.Cors;
+using Microsoft.EntityFrameworkCore;
+using MinimalAPIsTopLearn.Data;
 using MinimalAPIsTopLearn.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //Services Start
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
+
+
 builder.Services.AddOpenApi();
+
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
