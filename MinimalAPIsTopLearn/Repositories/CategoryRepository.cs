@@ -1,4 +1,5 @@
-﻿using MinimalAPIsTopLearn.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MinimalAPIsTopLearn.Data;
 using MinimalAPIsTopLearn.Entities;
 
 namespace MinimalAPIsTopLearn.Repositories
@@ -16,6 +17,16 @@ namespace MinimalAPIsTopLearn.Repositories
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
             return category.Id;
+        }
+
+        public async Task<List<CategoryInfo>> GetAll()
+        {
+            return await _context.Categories.ToListAsync();
+        }
+
+        public Task<CategoryInfo?> GetById(int id)
+        {
+            return _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
         }
     }
 }

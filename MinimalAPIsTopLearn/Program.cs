@@ -44,16 +44,21 @@ var app = builder.Build();
 app.UseOutputCache();
 app.UseCors();
 
-app.MapGet("/categories", () =>
+app.MapGet("/categories", async (ICategoryRepository _repo) =>
 {
-    return new List<CategoryInfo>
+    return await _repo.GetAll();
+}).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(60)));
+
+app.MapGet("/categories/{id:int}", async (int id, ICategoryRepository _repo) =>
+{
+    var category = await _repo.GetById(id);
+
+    if (category is null)
     {
-        new(){Id=0, Name="Web Development"},
-        new(){Id=1, Name="Mobile Development"},
-        new(){Id=2, Name="Desktop Development"},
-        new(){Id=3, Name="Database Adminstrator"},
-    };
-}).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(15)));
+        return Results.NotFound();
+    }
+    return Results.Ok(category);
+});
 
 
 app.MapPost("/categories", async (CategoryInfo category, ICategoryRepository _categoryRepository) =>
