@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using MinimalAPIsTopLearn.Data;
 using MinimalAPIsTopLearn.Entities;
@@ -47,7 +48,7 @@ app.UseCors();
 app.MapGet("/categories", async (ICategoryRepository _repo) =>
 {
     return await _repo.GetAll();
-}).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(60)));
+}).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(60)).Tag("categories-get"));
 
 app.MapGet("/categories/{id:int}", async (int id, ICategoryRepository _repo) =>
 {
@@ -61,9 +62,12 @@ app.MapGet("/categories/{id:int}", async (int id, ICategoryRepository _repo) =>
 });
 
 
-app.MapPost("/categories", async (CategoryInfo category, ICategoryRepository _categoryRepository) =>
+app.MapPost("/categories", async (CategoryInfo category, ICategoryRepository _categoryRepository, IOutputCacheStore _cacheStore) =>
 {
     var id = await _categoryRepository.Create(category);
+
+    await _cacheStore.EvictByTagAsync("categories-get", default);
+
     return Results.Created($"/categories/{id}", category);
 });
 
