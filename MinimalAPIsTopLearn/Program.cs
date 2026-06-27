@@ -45,12 +45,15 @@ var app = builder.Build();
 app.UseOutputCache();
 app.UseCors();
 
-app.MapGet("/categories", async (ICategoryRepository _repo) =>
+#region Categories Endpoints
+var categoriesEndpoints = app.MapGroup("/categories");
+
+categoriesEndpoints.MapGet("/", async (ICategoryRepository _repo) =>
 {
     return await _repo.GetAll();
-}).CacheOutput(c=>c.Expire(TimeSpan.FromSeconds(60)).Tag("categories-get"));
+}).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("categories-get"));
 
-app.MapGet("/categories/{id:int}", async (int id, ICategoryRepository _repo) =>
+categoriesEndpoints.MapGet("/{id:int}", async (int id, ICategoryRepository _repo) =>
 {
     var category = await _repo.GetById(id);
 
@@ -62,7 +65,7 @@ app.MapGet("/categories/{id:int}", async (int id, ICategoryRepository _repo) =>
 });
 
 
-app.MapPost("/categories", async (CategoryInfo category, ICategoryRepository _categoryRepository, IOutputCacheStore _cacheStore) =>
+categoriesEndpoints.MapPost("/", async (CategoryInfo category, ICategoryRepository _categoryRepository, IOutputCacheStore _cacheStore) =>
 {
     var id = await _categoryRepository.Create(category);
 
@@ -71,7 +74,7 @@ app.MapPost("/categories", async (CategoryInfo category, ICategoryRepository _ca
     return Results.Created($"/categories/{id}", category);
 });
 
-app.MapPut("/categories/{id:int}", async (int id, CategoryInfo category, ICategoryRepository _repo, IOutputCacheStore _cacheStore) =>
+categoriesEndpoints.MapPut("/{id:int}", async (int id, CategoryInfo category, ICategoryRepository _repo, IOutputCacheStore _cacheStore) =>
 {
     var exists = await _repo.Exists(id);
     if (exists == false)
@@ -83,7 +86,7 @@ app.MapPut("/categories/{id:int}", async (int id, CategoryInfo category, ICatego
     return Results.NoContent();
 });
 
-app.MapDelete("/categories/{id:int}", async (int id, ICategoryRepository _repo, IOutputCacheStore _cacheStore) =>
+categoriesEndpoints.MapDelete("/{id:int}", async (int id, ICategoryRepository _repo, IOutputCacheStore _cacheStore) =>
 {
     var exists = await _repo.Exists(id);
     if (exists == false)
@@ -94,6 +97,8 @@ app.MapDelete("/categories/{id:int}", async (int id, ICategoryRepository _repo, 
     await _cacheStore.EvictByTagAsync("categories-get", default);
     return Results.NoContent();
 });
+
+#endregion
 
 
 // Configure the HTTP request pipeline.
