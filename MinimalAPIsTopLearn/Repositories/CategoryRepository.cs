@@ -19,14 +19,29 @@ namespace MinimalAPIsTopLearn.Repositories
             return category.Id;
         }
 
+
+
         public async Task<List<CategoryInfo>> GetAll()
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories
+                //.OrderByDescending(c=>c.Name)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
         }
 
-        public Task<CategoryInfo?> GetById(int id)
+        public async Task<CategoryInfo?> GetById(int id)
         {
-            return _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+        }
+        public async Task<bool> Exists(int id)
+        {
+            return await _context.Categories.AnyAsync(c => c.Id == id);
+        }
+        public async Task Update(CategoryInfo category)
+        {
+            _context.Categories.Update(category);
+            await _context.SaveChangesAsync();
+
         }
     }
 }

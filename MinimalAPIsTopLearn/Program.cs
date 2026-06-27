@@ -71,6 +71,18 @@ app.MapPost("/categories", async (CategoryInfo category, ICategoryRepository _ca
     return Results.Created($"/categories/{id}", category);
 });
 
+app.MapPut("/categories/{id:int}", async (int id, CategoryInfo category, ICategoryRepository _repo, IOutputCacheStore _cacheStore) =>
+{
+    var exists = await _repo.Exists(id);
+    if (exists == false)
+    {
+        return Results.NotFound();
+    }
+    await _repo.Update(category);
+    await _cacheStore.EvictByTagAsync("categories-get", default);
+    return Results.NoContent();
+});
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
