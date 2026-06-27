@@ -43,5 +43,12 @@ namespace MinimalAPIsTopLearn.Repositories
             await _context.SaveChangesAsync();
 
         }
+        public async Task Delete(int id)
+        {
+            //var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            //_context.Remove(category);
+
+            await _context.Categories.Where(c => c.Id == id).ExecuteDeleteAsync();
+        }
     }
 }

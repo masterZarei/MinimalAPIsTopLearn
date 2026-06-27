@@ -9,5 +9,6 @@ namespace MinimalAPIsTopLearn.Repositories
         Task<List<CategoryInfo>> GetAll();
         Task<bool> Exists(int id);
         Task Update(CategoryInfo category);
+        Task Delete(int id);
     }
 }

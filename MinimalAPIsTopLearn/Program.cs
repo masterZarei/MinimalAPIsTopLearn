@@ -83,6 +83,18 @@ app.MapPut("/categories/{id:int}", async (int id, CategoryInfo category, ICatego
     return Results.NoContent();
 });
 
+app.MapDelete("/categories/{id:int}", async (int id, ICategoryRepository _repo, IOutputCacheStore _cacheStore) =>
+{
+    var exists = await _repo.Exists(id);
+    if (exists == false)
+    {
+        return Results.NotFound();
+    }
+    await _repo.Delete(id);
+    await _cacheStore.EvictByTagAsync("categories-get", default);
+    return Results.NoContent();
+});
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
