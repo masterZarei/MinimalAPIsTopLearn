@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using MinimalAPIsTopLearn.Data;
@@ -48,56 +48,13 @@ app.UseCors();
 #region Categories Endpoints
 var categoriesEndpoints = app.MapGroup("/categories");
 
-categoriesEndpoints.MapGet("/", async (ICategoryRepository _repo) =>
-{
-    return await _repo.GetAll();
-}).CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("categories-get"));
+categoriesEndpoints.MapGet("/", GetCategories)
+    .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("categories-get"));
 
-categoriesEndpoints.MapGet("/{id:int}", async (int id, ICategoryRepository _repo) =>
-{
-    var category = await _repo.GetById(id);
-
-    if (category is null)
-    {
-        return Results.NotFound();
-    }
-    return Results.Ok(category);
-});
-
-
-categoriesEndpoints.MapPost("/", async (CategoryInfo category, ICategoryRepository _categoryRepository, IOutputCacheStore _cacheStore) =>
-{
-    var id = await _categoryRepository.Create(category);
-
-    await _cacheStore.EvictByTagAsync("categories-get", default);
-
-    return Results.Created($"/categories/{id}", category);
-});
-
-categoriesEndpoints.MapPut("/{id:int}", async (int id, CategoryInfo category, ICategoryRepository _repo, IOutputCacheStore _cacheStore) =>
-{
-    var exists = await _repo.Exists(id);
-    if (exists == false)
-    {
-        return Results.NotFound();
-    }
-    await _repo.Update(category);
-    await _cacheStore.EvictByTagAsync("categories-get", default);
-    return Results.NoContent();
-});
-
-categoriesEndpoints.MapDelete("/{id:int}", async (int id, ICategoryRepository _repo, IOutputCacheStore _cacheStore) =>
-{
-    var exists = await _repo.Exists(id);
-    if (exists == false)
-    {
-        return Results.NotFound();
-    }
-    await _repo.Delete(id);
-    await _cacheStore.EvictByTagAsync("categories-get", default);
-    return Results.NoContent();
-});
-
+categoriesEndpoints.MapGet("/{id:int}", GetById);
+categoriesEndpoints.MapPost("/", Created);
+categoriesEndpoints.MapPut("/{id:int}", Update);
+categoriesEndpoints.MapDelete("/{id:int}", Delete);
 #endregion
 
 
@@ -115,3 +72,55 @@ app.UseHttpsRedirection();
 
 app.Run();
 //Middleware End
+
+static async Task<Ok<List<CategoryInfo>>> GetCategories(ICategoryRepository _repo)
+{
+    var categories = await _repo.GetAll();
+    return TypedResults.Ok(categories);
+}
+
+static async Task<Results<Ok<CategoryInfo>, NotFound>> GetById(int id, ICategoryRepository _repo)
+{
+    var category = await _repo.GetById(id);
+
+    if (category is null)
+    {
+        return TypedResults.NotFound();
+    }
+    return TypedResults.Ok(category);
+}
+
+static async Task<Created<CategoryInfo>> Created(CategoryInfo category, ICategoryRepository _categoryRepository,
+    IOutputCacheStore _cacheStore)
+{
+    var id = await _categoryRepository.Create(category);
+
+    await _cacheStore.EvictByTagAsync("categories-get", default);
+
+    return TypedResults.Created($"/categories/{id}", category);
+}
+
+static async Task<Results<NoContent, NotFound>> Update(int id, CategoryInfo category, ICategoryRepository _repo,
+    IOutputCacheStore _cacheStore)
+{
+    var exists = await _repo.Exists(id);
+    if (exists == false)
+    {
+        return TypedResults.NotFound();
+    }
+    await _repo.Update(category);
+    await _cacheStore.EvictByTagAsync("categories-get", default);
+    return TypedResults.NoContent();
+}
+static async Task<Results<NoContent, NotFound>> Delete(int id, ICategoryRepository _repo,
+    IOutputCacheStore _cacheStore)
+{
+    var exists = await _repo.Exists(id);
+    if (exists == false)
+    {
+        return TypedResults.NotFound();
+    }
+    await _repo.Delete(id);
+    await _cacheStore.EvictByTagAsync("categories-get", default);
+    return TypedResults.NoContent();
+}
