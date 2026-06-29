@@ -11,6 +11,7 @@ public static class CategoriesEndpoints
     {
         group.MapGet("/", GetCategories)
             .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("categories-get"));
+
         group.MapGet("/{id:int}", GetById);
         group.MapPost("/", Created);
         group.MapPut("/{id:int}", Update);
