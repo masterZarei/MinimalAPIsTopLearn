@@ -9,7 +9,7 @@ namespace MinimalAPIsTopLearn.Data
         {
         }
         public DbSet<CategoryInfo> Categories { get; set; }
-
+        public DbSet<InstructorInfo> Instructors { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -17,6 +17,9 @@ namespace MinimalAPIsTopLearn.Data
 
 
             modelBuilder.Entity<CategoryInfo>().Property(p => p.Name).HasMaxLength(150);
+
+            modelBuilder.Entity<InstructorInfo>().Property(p => p.Name).HasMaxLength(150);
+            modelBuilder.Entity<InstructorInfo>().Property(p => p.Picture).IsUnicode();
         }
     }
 }
