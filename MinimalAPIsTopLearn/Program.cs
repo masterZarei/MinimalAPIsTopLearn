@@ -5,6 +5,7 @@ using MinimalAPIsTopLearn.Data;
 using MinimalAPIsTopLearn.Endpoints;
 using MinimalAPIsTopLearn.Entities;
 using MinimalAPIsTopLearn.Repositories;
+using MinimalAPIsTopLearn.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +39,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddOutputCache();
-
+builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 //Services End
 
 //Middleware Start

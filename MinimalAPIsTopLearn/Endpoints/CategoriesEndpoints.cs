@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.OutputCaching;
+using MinimalAPIsTopLearn.DTOs;
 using MinimalAPIsTopLearn.Entities;
 using MinimalAPIsTopLearn.Repositories;
 
@@ -21,13 +23,14 @@ public static class CategoriesEndpoints
     }
 
 
-    static async Task<Ok<List<CategoryInfo>>> GetCategories(ICategoryRepository _repo)
+    static async Task<Ok<List<CategoryDTO>>> GetCategories(ICategoryRepository _repo, IMapper _mapper)
     {
         var categories = await _repo.GetAll();
-        return TypedResults.Ok(categories);
+        var categoryDtoList = _mapper.Map<List<CategoryDTO>>(categories);
+        return TypedResults.Ok(categoryDtoList);
     }
 
-    static async Task<Results<Ok<CategoryInfo>, NotFound>> GetById(int id, ICategoryRepository _repo)
+    static async Task<Results<Ok<CategoryDTO>, NotFound>> GetById(int id, ICategoryRepository _repo, IMapper _mapper)
     {
         var category = await _repo.GetById(id);
 
@@ -35,27 +38,31 @@ public static class CategoriesEndpoints
         {
             return TypedResults.NotFound();
         }
-        return TypedResults.Ok(category);
+        return TypedResults.Ok(_mapper.Map<CategoryDTO>(category));
     }
 
-    static async Task<Created<CategoryInfo>> Created(CategoryInfo category, ICategoryRepository _categoryRepository,
-        IOutputCacheStore _cacheStore)
+    static async Task<Created<CategoryCreateDTO>> Created(CategoryCreateDTO categoryCreateDTO, ICategoryRepository _categoryRepository,
+        IOutputCacheStore _cacheStore, IMapper _mapper)
     {
+        var category = _mapper.Map<CategoryInfo>(categoryCreateDTO);
         var id = await _categoryRepository.Create(category);
 
         await _cacheStore.EvictByTagAsync("categories-get", default);
 
-        return TypedResults.Created($"/categories/{id}", category);
+        var result = _mapper.Map<CategoryCreateDTO>(category);
+        return TypedResults.Created($"/categories/{id}", result);
     }
 
-    static async Task<Results<NoContent, NotFound>> Update(int id, CategoryInfo category, ICategoryRepository _repo,
-        IOutputCacheStore _cacheStore)
+    static async Task<Results<NoContent, NotFound>> Update(int id, CategoryCreateDTO categoryCreateDTO, ICategoryRepository _repo,
+        IOutputCacheStore _cacheStore, IMapper _mapper)
     {
         var exists = await _repo.Exists(id);
         if (exists == false)
         {
             return TypedResults.NotFound();
         }
+        var category = _mapper.Map<CategoryInfo>(categoryCreateDTO);
+        category.Id = id;
         await _repo.Update(category);
         await _cacheStore.EvictByTagAsync("categories-get", default);
         return TypedResults.NoContent();
