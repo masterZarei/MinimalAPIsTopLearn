@@ -10,5 +10,10 @@ public class MappingProfile : Profile
     {
         CreateMap<CategoryInfo, CategoryDTO>().ReverseMap();
         CreateMap<CategoryCreateDTO, CategoryInfo>().ReverseMap();
+
+        CreateMap<InstructorInfo, InstructorDTO>().ReverseMap();
+        CreateMap<InstructorCreateDTO, InstructorInfo>()
+            .ForMember(p => p.Picture, options=> options.Ignore())
+            .ReverseMap();
     }
 }

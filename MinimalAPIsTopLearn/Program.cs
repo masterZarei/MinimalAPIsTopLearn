@@ -49,8 +49,8 @@ app.UseOutputCache();
 app.UseCors();
 
 
-var categoriesEndpoints = app.MapGroup("/categories").MapCategories();
-
+app.MapGroup("/categories").MapCategories();
+app.MapGroup("/instructors").MapInstructors();
 
 
 
