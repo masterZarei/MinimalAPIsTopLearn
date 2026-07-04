@@ -5,6 +5,7 @@ using MinimalAPIsTopLearn.Data;
 using MinimalAPIsTopLearn.Endpoints;
 using MinimalAPIsTopLearn.Entities;
 using MinimalAPIsTopLearn.Repositories;
+using MinimalAPIsTopLearn.Services;
 using MinimalAPIsTopLearn.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
+builder.Services.AddTransient<IFileStorage, FileStorage>();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddOpenApi();
 
@@ -64,7 +67,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
+app.UseStaticFiles();
 
 app.Run();
 //Middleware End
