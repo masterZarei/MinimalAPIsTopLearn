@@ -5,20 +5,29 @@ using Microsoft.AspNetCore.OutputCaching;
 using MinimalAPIsTopLearn.DTOs;
 using MinimalAPIsTopLearn.Entities;
 using MinimalAPIsTopLearn.Repositories;
+using MinimalAPIsTopLearn.Services;
 
 namespace MinimalAPIsTopLearn.Endpoints;
 
 public static class InstructorsEndpoints
 {
+    private readonly static string _container = "instructors";
     public static RouteGroupBuilder MapInstructors(this RouteGroupBuilder group)
     {
         group.MapPost("/", Create).DisableAntiforgery();
         return group;
     }
     static async Task<Created<InstructorDTO>> Create([FromForm] InstructorCreateDTO instructorCreateDTO,
-        IInstructorRepository _repo, IOutputCacheStore _cacheStore, IMapper _mapper)
+        IInstructorRepository _repo, IOutputCacheStore _cacheStore, IMapper _mapper, IFileStorage _fileStorage)
     {
         var instructor = _mapper.Map<InstructorInfo>(instructorCreateDTO);
+
+        if (instructorCreateDTO.Picture is not null)
+        {
+            var url = await _fileStorage.Store(_container, instructorCreateDTO.Picture);
+            instructor.Picture = url;
+        }
+
         var id = await _repo.Create(instructor);
         await _cacheStore.EvictByTagAsync("instructor-get", default);
         var instructorDto = _mapper.Map<InstructorDTO>(instructor);
