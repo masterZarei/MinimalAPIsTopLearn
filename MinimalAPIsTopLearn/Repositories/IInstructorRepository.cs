@@ -9,5 +9,6 @@ public interface IInstructorRepository
     Task<bool> Exists(int id);
     Task<List<InstructorInfo>> GetAll();
     Task<InstructorInfo?> GetById(int id);
+    Task<List<InstructorInfo>?> GetByName(string name);
     Task Update(InstructorInfo instructor);
 }

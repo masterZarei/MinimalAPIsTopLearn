@@ -17,6 +17,7 @@ public static class InstructorsEndpoints
     {
         group.MapGet("/",GetAll).CacheOutput(c=>c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
         group.MapGet("/{id:int}", GetById);
+        group.MapGet("/{name}", GetByName);
         group.MapPost("/", Create).DisableAntiforgery();
         return group;
     }
@@ -35,6 +36,13 @@ public static class InstructorsEndpoints
             return TypedResults.NotFound();
         }
         var instructorDto = _mapper.Map<InstructorDTO>(instructor);
+        return TypedResults.Ok(instructorDto);
+    }
+    static async Task<Ok<List<InstructorDTO>>> GetByName(string name, IInstructorRepository _repo, IMapper _mapper)
+    {
+        var instructor = await _repo.GetByName(name);
+       
+        var instructorDto = _mapper.Map<List<InstructorDTO>>(instructor);
         return TypedResults.Ok(instructorDto);
     }
     static async Task<Created<InstructorDTO>> Create([FromForm] InstructorCreateDTO instructorCreateDTO,

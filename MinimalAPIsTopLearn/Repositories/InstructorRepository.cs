@@ -39,4 +39,12 @@ public class InstructorRepository : IInstructorRepository
     {
         return await _context.Instructors.AnyAsync(x => x.Id == id);
     }
+
+    public async Task<List<InstructorInfo>?> GetByName(string name)
+    {
+        return await _context.Instructors
+            .Where(x=>x.Name.Contains(name))
+            .OrderBy(x=>x.Name)
+            .ToListAsync();
+    }
 }
