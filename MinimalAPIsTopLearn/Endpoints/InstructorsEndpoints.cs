@@ -12,10 +12,30 @@ namespace MinimalAPIsTopLearn.Endpoints;
 public static class InstructorsEndpoints
 {
     private readonly static string _container = "instructors";
+    private readonly static string _cacheTag = "instructor-get";
     public static RouteGroupBuilder MapInstructors(this RouteGroupBuilder group)
     {
+        group.MapGet("/",GetAll).CacheOutput(c=>c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
+        group.MapGet("/{id:int}", GetById);
         group.MapPost("/", Create).DisableAntiforgery();
         return group;
+    }
+    static async Task<Ok<List<InstructorDTO>>> GetAll(IInstructorRepository _repo, IMapper _mapper)
+    {
+        var instructors = await _repo.GetAll();
+        var instructorDto = _mapper.Map<List<InstructorDTO>>(instructors);
+        return TypedResults.Ok(instructorDto);
+
+    }
+    static async Task<Results<Ok<InstructorDTO>,NotFound>> GetById(int id,IInstructorRepository _repo, IMapper _mapper)
+    {
+        var instructor = await _repo.GetById(id);
+        if (instructor is null)
+        {
+            return TypedResults.NotFound();
+        }
+        var instructorDto = _mapper.Map<InstructorDTO>(instructor);
+        return TypedResults.Ok(instructorDto);
     }
     static async Task<Created<InstructorDTO>> Create([FromForm] InstructorCreateDTO instructorCreateDTO,
         IInstructorRepository _repo, IOutputCacheStore _cacheStore, IMapper _mapper, IFileStorage _fileStorage)
@@ -29,7 +49,7 @@ public static class InstructorsEndpoints
         }
 
         var id = await _repo.Create(instructor);
-        await _cacheStore.EvictByTagAsync("instructor-get", default);
+        await _cacheStore.EvictByTagAsync(_cacheTag, default);
         var instructorDto = _mapper.Map<InstructorDTO>(instructor);
         return TypedResults.Created($"/instructors/{id}", instructorDto);
     }

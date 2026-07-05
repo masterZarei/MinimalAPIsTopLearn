@@ -9,10 +9,12 @@ namespace MinimalAPIsTopLearn.Endpoints;
 
 public static class CategoriesEndpoints
 {
+    private readonly static string _cacheTag = "categories-get";
+
     public static RouteGroupBuilder MapCategories(this RouteGroupBuilder group)
     {
         group.MapGet("/", GetCategories)
-            .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag("categories-get"));
+            .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag(_cacheTag));
 
         group.MapGet("/{id:int}", GetById);
         group.MapPost("/", Created);
@@ -47,7 +49,7 @@ public static class CategoriesEndpoints
         var category = _mapper.Map<CategoryInfo>(categoryCreateDTO);
         var id = await _categoryRepository.Create(category);
 
-        await _cacheStore.EvictByTagAsync("categories-get", default);
+        await _cacheStore.EvictByTagAsync(_cacheTag, default);
 
         var result = _mapper.Map<CategoryCreateDTO>(category);
         return TypedResults.Created($"/categories/{id}", result);
@@ -64,7 +66,7 @@ public static class CategoriesEndpoints
         var category = _mapper.Map<CategoryInfo>(categoryCreateDTO);
         category.Id = id;
         await _repo.Update(category);
-        await _cacheStore.EvictByTagAsync("categories-get", default);
+        await _cacheStore.EvictByTagAsync(_cacheTag, default);
         return TypedResults.NoContent();
     }
     static async Task<Results<NoContent, NotFound>> Delete(int id, ICategoryRepository _repo,
@@ -76,7 +78,7 @@ public static class CategoriesEndpoints
             return TypedResults.NotFound();
         }
         await _repo.Delete(id);
-        await _cacheStore.EvictByTagAsync("categories-get", default);
+        await _cacheStore.EvictByTagAsync(_cacheTag, default);
         return TypedResults.NoContent();
     }
 
