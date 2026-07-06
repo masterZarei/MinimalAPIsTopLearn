@@ -1,20 +1,29 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MinimalAPIsTopLearn.Data;
+using MinimalAPIsTopLearn.DTOs;
 using MinimalAPIsTopLearn.Entities;
+using MinimalAPIsTopLearn.Utilities.Extentions;
 
 namespace MinimalAPIsTopLearn.Repositories;
 
 public class InstructorRepository : IInstructorRepository
 {
     private readonly AppDbContext _context;
+    private readonly IHttpContextAccessor _httpContext;
 
-    public InstructorRepository(AppDbContext context)
+    public InstructorRepository(AppDbContext context, IHttpContextAccessor httpContext)
     {
         _context = context;
+        _httpContext = httpContext;
     }
-    public async Task<List<InstructorInfo>> GetAll()
+    public async Task<List<InstructorInfo>> GetAll(PaginationDTO pagination)
     {
-        return await _context.Instructors.ToListAsync();
+        var queryable = _context.Instructors.AsQueryable();
+        await _httpContext.HttpContext!.InsertPaginationInfoIntoResponseHeader(queryable);
+        return await queryable
+            .OrderBy(x => x.Name)
+            .Paginate(pagination)
+            .ToListAsync();
     }
     public async Task<InstructorInfo?> GetById(int id)
     {
@@ -43,8 +52,8 @@ public class InstructorRepository : IInstructorRepository
     public async Task<List<InstructorInfo>?> GetByName(string name)
     {
         return await _context.Instructors
-            .Where(x=>x.Name.Contains(name))
-            .OrderBy(x=>x.Name)
+            .Where(x => x.Name.Contains(name))
+            .OrderBy(x => x.Name)
             .ToListAsync();
     }
 }

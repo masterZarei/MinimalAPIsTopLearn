@@ -21,9 +21,11 @@ public static class InstructorsEndpoints
         group.MapPost("/", Create).DisableAntiforgery();
         return group;
     }
-    static async Task<Ok<List<InstructorDTO>>> GetAll(IInstructorRepository _repo, IMapper _mapper)
+    static async Task<Ok<List<InstructorDTO>>> GetAll(IInstructorRepository _repo, IMapper _mapper,
+        int page = 1, int recordsPerPage = 10)
     {
-        var instructors = await _repo.GetAll();
+        var pagination = new PaginationDTO { Page = page, RecordsPerPage = recordsPerPage };
+        var instructors = await _repo.GetAll(pagination);
         var instructorDto = _mapper.Map<List<InstructorDTO>>(instructors);
         return TypedResults.Ok(instructorDto);
 
