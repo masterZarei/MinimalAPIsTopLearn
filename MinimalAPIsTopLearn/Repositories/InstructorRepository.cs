@@ -23,7 +23,7 @@ public class InstructorRepository : IInstructorRepository
         return await queryable
             .OrderBy(x => x.Name)
             .Paginate(pagination)
-            .ToListAsync();
+            .ToListAsync(); 
     }
     public async Task<InstructorInfo?> GetById(int id)
     {

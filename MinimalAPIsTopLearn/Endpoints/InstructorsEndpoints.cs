@@ -18,6 +18,7 @@ public static class InstructorsEndpoints
         group.MapGet("/",GetAll).CacheOutput(c=>c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
         group.MapGet("/{id:int}", GetById);
         group.MapGet("/{name}", GetByName);
+        group.MapPut("/{id:int}", Update).DisableAntiforgery();
         group.MapPost("/", Create).DisableAntiforgery();
         return group;
     }
@@ -62,5 +63,28 @@ public static class InstructorsEndpoints
         await _cacheStore.EvictByTagAsync(_cacheTag, default);
         var instructorDto = _mapper.Map<InstructorDTO>(instructor);
         return TypedResults.Created($"/instructors/{id}", instructorDto);
+    }
+
+    static async Task<Results<NoContent, NotFound>> Update(int id, [FromForm] InstructorCreateDTO instructorCreateDTO,
+        IInstructorRepository _repo, IOutputCacheStore _cacheStore, IMapper _mapper, IFileStorage _fileStorage)
+    {
+        var instructor = await _repo.GetById(id);
+        if (instructor is null)
+        {
+            return TypedResults.NotFound();
+        }
+        var instructorToUpdate = _mapper.Map<InstructorInfo>(instructorCreateDTO);
+        instructorToUpdate.Id = id;
+        instructorToUpdate.Picture = instructor.Picture;
+
+        if (instructorCreateDTO.Picture is not null)
+        {
+            var url = await _fileStorage.Edit(instructorToUpdate.Picture, _container,
+                instructorCreateDTO.Picture);
+            instructorToUpdate.Picture = url;
+        }
+        await _repo.Update(instructorToUpdate);
+        await _cacheStore.EvictByTagAsync(_cacheTag, default);
+        return TypedResults.NoContent();
     }
 }
