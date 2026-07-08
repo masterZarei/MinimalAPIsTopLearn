@@ -15,10 +15,11 @@ public static class InstructorsEndpoints
     private readonly static string _cacheTag = "instructor-get";
     public static RouteGroupBuilder MapInstructors(this RouteGroupBuilder group)
     {
-        group.MapGet("/",GetAll).CacheOutput(c=>c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
+        group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
         group.MapGet("/{id:int}", GetById);
         group.MapGet("/{name}", GetByName);
         group.MapPut("/{id:int}", Update).DisableAntiforgery();
+        group.MapDelete("/{id:int}", Delete);
         group.MapPost("/", Create).DisableAntiforgery();
         return group;
     }
@@ -31,7 +32,7 @@ public static class InstructorsEndpoints
         return TypedResults.Ok(instructorDto);
 
     }
-    static async Task<Results<Ok<InstructorDTO>,NotFound>> GetById(int id,IInstructorRepository _repo, IMapper _mapper)
+    static async Task<Results<Ok<InstructorDTO>, NotFound>> GetById(int id, IInstructorRepository _repo, IMapper _mapper)
     {
         var instructor = await _repo.GetById(id);
         if (instructor is null)
@@ -44,7 +45,7 @@ public static class InstructorsEndpoints
     static async Task<Ok<List<InstructorDTO>>> GetByName(string name, IInstructorRepository _repo, IMapper _mapper)
     {
         var instructor = await _repo.GetByName(name);
-       
+
         var instructorDto = _mapper.Map<List<InstructorDTO>>(instructor);
         return TypedResults.Ok(instructorDto);
     }
@@ -84,6 +85,19 @@ public static class InstructorsEndpoints
             instructorToUpdate.Picture = url;
         }
         await _repo.Update(instructorToUpdate);
+        await _cacheStore.EvictByTagAsync(_cacheTag, default);
+        return TypedResults.NoContent();
+    }
+    static async Task<Results<NoContent, NotFound>> Delete(int id,
+        IInstructorRepository _repo, IOutputCacheStore _cacheStore, IFileStorage _fileStorage)
+    {
+        var instructor = await _repo.GetById(id);
+        if (instructor is null)
+        {
+            return TypedResults.NotFound();
+        }
+        await _repo.Delete(id);
+        await _fileStorage.Delete(instructor.Picture, _container);
         await _cacheStore.EvictByTagAsync(_cacheTag, default);
         return TypedResults.NoContent();
     }
