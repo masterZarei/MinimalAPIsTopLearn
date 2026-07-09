@@ -22,6 +22,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
 builder.Services.AddTransient<IFileStorage, FileStorage>();
+builder.Services.AddTransient<ICourseRepository, CourseRepository>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddOpenApi();

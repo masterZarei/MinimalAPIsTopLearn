@@ -22,7 +22,7 @@ namespace MinimalAPIsTopLearn.Data
             modelBuilder.Entity<InstructorInfo>().Property(p => p.Picture).IsUnicode();
 
             modelBuilder.Entity<CourseInfo>().Property(p => p.Title).HasMaxLength(250);
-            modelBuilder.Entity<InstructorInfo>().Property(p => p.Picture).IsUnicode();
+            modelBuilder.Entity<CourseInfo>().Property(p => p.Thumbnail).IsUnicode();
         }
     }
 }
