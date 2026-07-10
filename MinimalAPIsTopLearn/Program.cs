@@ -55,6 +55,7 @@ app.UseCors();
 
 app.MapGroup("/categories").MapCategories();
 app.MapGroup("/instructors").MapInstructors();
+app.MapGroup("/courses").MapCourses();
 
 
 

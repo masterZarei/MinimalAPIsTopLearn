@@ -15,5 +15,10 @@ public class MappingProfile : Profile
         CreateMap<InstructorCreateDTO, InstructorInfo>()
             .ForMember(p => p.Picture, options=> options.Ignore())
             .ReverseMap();
+
+        CreateMap<CourseInfo, CourseDTO>().ReverseMap();
+        CreateMap<CourseCreateDTO, CourseInfo>()
+            .ForMember(p => p.Thumbnail, options => options.Ignore())
+            .ReverseMap();
     }
 }
