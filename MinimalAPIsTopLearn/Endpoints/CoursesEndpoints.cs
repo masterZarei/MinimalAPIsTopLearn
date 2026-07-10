@@ -15,8 +15,30 @@ public static class CoursesEndpoints
     private readonly static string _cacheTag = "courses-get";
     public static RouteGroupBuilder MapCourses(this RouteGroupBuilder group)
     {
+        group.MapGet("/", GetAll)
+            .CacheOutput(c => c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
+        group.MapGet("/{id:int}",GetById);
         group.MapPost("/", Create).DisableAntiforgery();
         return group;
+    }
+    static async Task<Ok<List<CourseDTO>>> GetAll(ICourseRepository _repo, IMapper _mapper,
+        int page = 1, int recordsPerPage = 10)
+    {
+        var pagination = new PaginationDTO { Page = page, RecordsPerPage = recordsPerPage };
+        var courses = await _repo.GetAll(pagination);
+        var courseDto = _mapper.Map<List<CourseDTO>>(courses);
+        return TypedResults.Ok(courseDto);
+    }
+    static async Task<Results<Ok<CourseDTO>, NotFound>> GetById(int id, ICourseRepository _repo,
+        IMapper _mapper)
+    {
+        var course = await _repo.GetById(id);
+        if (course is null)
+        {
+            return TypedResults.NotFound();
+        }
+        var courseDto = _mapper.Map<CourseDTO>(course);
+        return TypedResults.Ok(courseDto);
     }
     static async Task<Created<CourseDTO>> Create([FromForm] CourseCreateDTO courseCreateDTO,
         IFileStorage _fileStorage, IOutputCacheStore _outputCacheStore, IMapper _mapper,
