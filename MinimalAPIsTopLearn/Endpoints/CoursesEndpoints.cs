@@ -18,6 +18,7 @@ public static class CoursesEndpoints
         group.MapGet("/", GetAll)
             .CacheOutput(c => c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
         group.MapGet("/{id:int}", GetById);
+        group.MapDelete("/{id:int}", Delete);
         group.MapPost("/", Create).DisableAntiforgery();
         group.MapPut("/{id:int}", Update).DisableAntiforgery();
         return group;
@@ -76,6 +77,20 @@ public static class CoursesEndpoints
         }
 
         await _repo.Update(courseToUpdate);
+        await _outputCacheStore.EvictByTagAsync(_cacheTag, default);
+        return TypedResults.NoContent();
+    }
+    static async Task<Results<NoContent, NotFound>> Delete(int id,
+        IFileStorage _fileStorage, IOutputCacheStore _outputCacheStore,
+        ICourseRepository _repo)
+    {
+        var course = await _repo.GetById(id);
+        if (course is null)
+        {
+            return TypedResults.NotFound();
+        }
+        await _repo.Delete(id);
+        await _fileStorage.Delete(course.Thumbnail, _container);
         await _outputCacheStore.EvictByTagAsync(_cacheTag, default);
         return TypedResults.NoContent();
     }
