@@ -17,8 +17,9 @@ public static class CoursesEndpoints
     {
         group.MapGet("/", GetAll)
             .CacheOutput(c => c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
-        group.MapGet("/{id:int}",GetById);
+        group.MapGet("/{id:int}", GetById);
         group.MapPost("/", Create).DisableAntiforgery();
+        group.MapPut("/{id:int}", Update).DisableAntiforgery();
         return group;
     }
     static async Task<Ok<List<CourseDTO>>> GetAll(ICourseRepository _repo, IMapper _mapper,
@@ -54,5 +55,28 @@ public static class CoursesEndpoints
         await _outputCacheStore.EvictByTagAsync(_cacheTag, default);
         var courseDto = _mapper.Map<CourseDTO>(course);
         return TypedResults.Created($"courses/{id}", courseDto);
+    }
+    static async Task<Results<NoContent, NotFound>> Update(int id, [FromForm] CourseCreateDTO courseCreateDTO,
+        IFileStorage _fileStorage, IOutputCacheStore _outputCacheStore, IMapper _mapper,
+        ICourseRepository _repo)
+    {
+        var course = await _repo.GetById(id);
+        if (course is null)
+        {
+            return TypedResults.NotFound();
+        }
+        var courseToUpdate = _mapper.Map<CourseInfo>(courseCreateDTO);
+        courseToUpdate.Id = id;
+        courseToUpdate.Thumbnail = course.Thumbnail;
+
+        if (courseCreateDTO.Thumbnail is not null)
+        {
+            var url = await _fileStorage.Edit(courseToUpdate.Thumbnail, _container, courseCreateDTO.Thumbnail);
+            courseToUpdate.Thumbnail = url;
+        }
+
+        await _repo.Update(courseToUpdate);
+        await _outputCacheStore.EvictByTagAsync(_cacheTag, default);
+        return TypedResults.NoContent();
     }
 }
