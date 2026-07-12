@@ -11,6 +11,9 @@ namespace MinimalAPIsTopLearn.Data
         public DbSet<CategoryInfo> Categories { get; set; }
         public DbSet<InstructorInfo> Instructors { get; set; }
         public DbSet<CourseInfo> Courses { get; set; }
+        public DbSet<CommentInfo> Comments { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

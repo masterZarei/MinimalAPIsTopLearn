@@ -8,4 +8,6 @@ public class CourseInfo
     public bool IsFree { get; set; }
     public string? Thumbnail { get; set; }
     public DateTime ReleaseDate { get; set; }
+
+    public List<CommentInfo>? Comments { get; set; } = [];
 }
