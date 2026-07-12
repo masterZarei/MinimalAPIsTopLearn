@@ -1,9 +1,6 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using MinimalAPIsTopLearn.Data;
 using MinimalAPIsTopLearn.Endpoints;
-using MinimalAPIsTopLearn.Entities;
 using MinimalAPIsTopLearn.Repositories;
 using MinimalAPIsTopLearn.Services;
 using MinimalAPIsTopLearn.Utilities;
@@ -23,6 +20,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IInstructorRepository, InstructorRepository>();
 builder.Services.AddTransient<IFileStorage, FileStorage>();
 builder.Services.AddTransient<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddOpenApi();
