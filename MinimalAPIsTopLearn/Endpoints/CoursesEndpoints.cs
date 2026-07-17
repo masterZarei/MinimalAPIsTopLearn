@@ -13,15 +13,15 @@ public static class CoursesEndpoints
 {
     private readonly static string _container = "courses";
     private readonly static string _cacheTag = "courses-get";
-    public static RouteGroupBuilder MapCourses(this RouteGroupBuilder group)
+    public static RouteGroupBuilder MapCourses(this RouteGroupBuilder builder)
     {
-        group.MapGet("/", GetAll)
+        builder.MapGet("/", GetAll)
             .CacheOutput(c => c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
-        group.MapGet("/{id:int}", GetById);
-        group.MapDelete("/{id:int}", Delete);
-        group.MapPost("/", Create).DisableAntiforgery();
-        group.MapPut("/{id:int}", Update).DisableAntiforgery();
-        return group;
+        builder.MapGet("/{id:int}", GetById);
+        builder.MapDelete("/{id:int}", Delete);
+        builder.MapPost("/", Create).DisableAntiforgery();
+        builder.MapPut("/{id:int}", Update).DisableAntiforgery();
+        return builder;
     }
     static async Task<Ok<List<CourseDTO>>> GetAll(ICourseRepository _repo, IMapper _mapper,
         int page = 1, int recordsPerPage = 10)

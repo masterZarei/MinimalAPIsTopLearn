@@ -11,17 +11,17 @@ public static class CategoriesEndpoints
 {
     private readonly static string _cacheTag = "categories-get";
 
-    public static RouteGroupBuilder MapCategories(this RouteGroupBuilder group)
+    public static RouteGroupBuilder MapCategories(this RouteGroupBuilder builder)
     {
-        group.MapGet("/", GetCategories)
+        builder.MapGet("/", GetCategories)
             .CacheOutput(c => c.Expire(TimeSpan.FromSeconds(60)).Tag(_cacheTag));
 
-        group.MapGet("/{id:int}", GetById);
-        group.MapPost("/", Created);
-        group.MapPut("/{id:int}", Update);
-        group.MapDelete("/{id:int}", Delete);
+        builder.MapGet("/{id:int}", GetById);
+        builder.MapPost("/", Created);
+        builder.MapPut("/{id:int}", Update);
+        builder.MapDelete("/{id:int}", Delete);
 
-        return group;
+        return builder;
     }
 
 

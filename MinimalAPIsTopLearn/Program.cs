@@ -54,7 +54,7 @@ app.UseCors();
 app.MapGroup("/categories").MapCategories();
 app.MapGroup("/instructors").MapInstructors();
 app.MapGroup("/courses").MapCourses();
-
+app.MapGroup("/course/{courseId:int}/comments").MapComments();
 
 
 // Configure the HTTP request pipeline.

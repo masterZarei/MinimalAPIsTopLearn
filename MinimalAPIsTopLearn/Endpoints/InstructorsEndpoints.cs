@@ -13,15 +13,15 @@ public static class InstructorsEndpoints
 {
     private readonly static string _container = "instructors";
     private readonly static string _cacheTag = "instructor-get";
-    public static RouteGroupBuilder MapInstructors(this RouteGroupBuilder group)
+    public static RouteGroupBuilder MapInstructors(this RouteGroupBuilder builder)
     {
-        group.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
-        group.MapGet("/{id:int}", GetById);
-        group.MapGet("/{name}", GetByName);
-        group.MapPut("/{id:int}", Update).DisableAntiforgery();
-        group.MapDelete("/{id:int}", Delete);
-        group.MapPost("/", Create).DisableAntiforgery();
-        return group;
+        builder.MapGet("/", GetAll).CacheOutput(c => c.Expire(TimeSpan.FromMinutes(1)).Tag(_cacheTag));
+        builder.MapGet("/{id:int}", GetById);
+        builder.MapGet("/{name}", GetByName);
+        builder.MapPut("/{id:int}", Update).DisableAntiforgery();
+        builder.MapDelete("/{id:int}", Delete);
+        builder.MapPost("/", Create).DisableAntiforgery();
+        return builder;
     }
     static async Task<Ok<List<InstructorDTO>>> GetAll(IInstructorRepository _repo, IMapper _mapper,
         int page = 1, int recordsPerPage = 10)

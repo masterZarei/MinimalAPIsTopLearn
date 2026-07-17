@@ -20,5 +20,8 @@ public class MappingProfile : Profile
         CreateMap<CourseCreateDTO, CourseInfo>()
             .ForMember(p => p.Thumbnail, options => options.Ignore())
             .ReverseMap();
+
+        CreateMap<CommentInfo, CommentDTO>().ReverseMap();
+        CreateMap<CommentCreateDTO, CommentInfo>().ReverseMap();
     }
 }
