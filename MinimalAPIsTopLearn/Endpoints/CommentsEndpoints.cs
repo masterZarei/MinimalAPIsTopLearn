@@ -12,6 +12,8 @@ public static class CommentsEndpoints
     {
         builder.MapGet("/", GetAll);
         builder.MapGet("/{id:int}", GetById);
+        builder.MapPut("/{id:int}", Update);
+        builder.MapDelete("/{id:int}", Delete);
         builder.MapPost("/", Create);
         return builder;
     }
@@ -57,5 +59,41 @@ public static class CommentsEndpoints
         var id = await _commentRepo.Create(comment);
         var commentDto = _mapper.Map<CommentDTO>(comment);
         return TypedResults.Created($"/comments/{id}", commentDto);
+    }
+    static async Task<Results<NoContent, NotFound>> Update(int id,int courseId,
+        CommentCreateDTO commentCreateDTO, ICourseRepository _courseRepo, ICommentRepository _commentRepo,
+        IMapper _mapper)
+    {
+        if (!await _courseRepo.Exists(courseId))
+        {
+            return TypedResults.NotFound();
+        }
+        if (!await _commentRepo.Exists(id))
+        {
+            return TypedResults.NotFound();
+        }
+        var comment = _mapper.Map<CommentInfo>(commentCreateDTO);
+        comment.Id = id;
+        comment.CourseId = courseId;
+
+        await _commentRepo.Update(comment);
+        return TypedResults.NoContent();
+            
+    }
+    static async Task<Results<NoContent, NotFound>> Delete(int id, int courseId,
+         ICourseRepository _courseRepo, ICommentRepository _commentRepo)
+    {
+        if (!await _courseRepo.Exists(courseId))
+        {
+            return TypedResults.NotFound();
+        }
+        if (!await _commentRepo.Exists(id))
+        {
+            return TypedResults.NotFound();
+        }
+
+        await _commentRepo.Delete(id);
+        return TypedResults.NoContent();
+
     }
 }
